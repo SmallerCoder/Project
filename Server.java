@@ -1,30 +1,64 @@
-package com.server;
-
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-public class Server {
+import com.sun.image.codec.jpeg.JPEGCodec;
 
-	public static void main(String[] args) throws Exception {
-		new Server_Frame();
-		// åˆ›å»ºä¸€ä¸ªæœåŠ¡å™¨ç«¯ServerSocketï¼Œç«¯å£å·ä¸º12000
-		@SuppressWarnings("resource")
-		ServerSocket server = new ServerSocket(12000);
-		// æœåŠ¡å™¨ç«¯çš„Socket
-		Socket socket = null;
-		/*
-		 * é‡‡ç”¨æ­»å¾ªç¯ï¼Œä¸æ–­ç›‘å¬æ¥è‡ªå®¢æˆ·ç«¯çš„é“¾æ¥
-		 */
-		while (true) {
-			try {
-				// ç›‘å¬å®¢æˆ·ç«¯çš„è¿æ¥
-				socket = server.accept();
-				// æ¯å¾—åˆ°ä¸€ä¸ªé“¾æ¥ï¼Œå•ç‹¬å¯åŠ¨ä¸€ä¸ªThreadçº¿ç¨‹å¤„ç†è¯¥é“¾æ¥
-				new ServerThread(socket).start();
-			} catch (IOException ee) {
-				System.err.println("æœåŠ¡å™¨å·²å…³é—­ï¼");
-			}
-		}
-	}
-}
+
+public class Server extends Thread {  
+    private Dimension screenSize;  
+    private Rectangle rectangle;  
+    private Robot robot;  
+  
+    public Server() {  
+        screenSize = Toolkit.getDefaultToolkit().getScreenSize();  
+        rectangle = new Rectangle(screenSize);// ¿ÉÒÔÖ¸¶¨²¶»ñÆÁÄ»ÇøÓò  
+        try {  
+            robot = new Robot();  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+            System.out.println(e);  
+        }  
+    }  
+  
+    public void run() {  
+        ZipOutputStream os = null;  
+        Socket socket = null;  
+        while (true) {  
+            try {  
+                socket = new Socket("172.25.240.60", 5001);// Á¬½ÓÔ¶³ÌIP  
+                BufferedImage image = robot.createScreenCapture(rectangle);// ²¶»ñÖÆ¶¨ÆÁÄ»¾ØĞÎÇøÓò  
+                os = new ZipOutputStream(socket.getOutputStream());// ¼ÓÈëÑ¹ËõÁ÷  
+                // os = new ZipOutputStream(new FileOutputStream("C:/1.zip"));  
+  
+                os.setLevel(9);  
+                os.putNextEntry(new ZipEntry("test.jpg"));  
+                JPEGCodec.createJPEGEncoder(os).encode(image);// Í¼Ïñ±àÂë³ÉJPEG  
+                os.close();  
+                Thread.sleep(50);// Ã¿Ãë20Ö¡  
+            } catch (Exception e) {  
+                e.printStackTrace();  
+            } finally {  
+                if (os != null) {  
+                    try {  
+                        os.close();  
+                    } catch (Exception ioe) {  
+                    }  
+                }  
+                if (socket != null) {  
+                    try {  
+                        socket.close();  
+                    } catch (IOException e) {  
+                    }  
+                }  
+            }  
+        }  
+    }  
+  
+    public static void main(String[] args) {  
+        new Server().start();  
+    }  
+}  

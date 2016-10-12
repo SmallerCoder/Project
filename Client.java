@@ -1,34 +1,27 @@
-package com.client;
+import java.awt.*;
+import javax.swing.*;
 
-import java.awt.image.BufferedImage;
-import java.net.Socket;
+public class Client extends JFrame { 
+   private static final long serialVersionUID = 1L; 
+   Dimension screenSize; 
 
-import javax.imageio.ImageIO;
+   public Client() { 
+       super(); 
+       screenSize = Toolkit.getDefaultToolkit().getScreenSize(); 
+       this.setSize(800, 640); 
+       Screen p = new Screen(); 
+        Container c = this.getContentPane(); 
+        c.setLayout(new BorderLayout()); 
+       c.add(p, SwingConstants.CENTER); 
+       new Thread(p).start(); 
+        SwingUtilities.invokeLater(new Runnable(){ 
+            public void run() { 
+               setVisible(true); 
+           }}); 
+   } 
 
-public class Client {
-	public static void main(String[] args) throws Exception {
-		
-		Socket socket = null;
-		try {
-			while (true) {
-				socket = new Socket("172.24.1.110", 12000);
-				// 获取屏幕画布
-				BufferedImage image = new ShotImage().snapShot();
-				/*
-				 * 如果屏幕画布获取不到，则报出异常IoException
-				 */
-				if (image == null){
-					System.out.println("图像获取不到！");
-					break;
-				}
-				// 使用支持给定格式的任意 ImageWriter 将一个图像写入 OutputStream。
-				ImageIO.write(image, "jpg", socket.getOutputStream());
-				System.out.println("写出图像成功");
-				 socket.close();
-			}
-			// new ClientThread(socket).start();
-		} catch (Exception ee) {
-			System.out.println("你已与服务端断开连接！");
-		}
-	}
-}
+   public static void main(String[] args) { 
+       new Client(); 
+   } 
+} 
+   
