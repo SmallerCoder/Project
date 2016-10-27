@@ -1,91 +1,221 @@
-ackage com.server;
+package com.server;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
 import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-public class Server_Frame extends JFrame{
+import com.server.control.NewWatchFrame;
+import com.server.util.GenerateDate;
+
+public class Server_Frame extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private static JPanel p1=new JPanel(new GridLayout(1, 10)); //å®šä¹‰ä¸€ä¸ªä¸­é—´å®¹å™¨ï¼Œå­˜æ”¾é¡¶éƒ¨9ä¸ªæŒ‰é’®+1ä¸ªæ ‡ç­¾
-	private static JButton[] btn = new JButton[13];//ä¸º13ä¸ªæŒ‰é’®æ·»åŠ æ¶ˆæ¯æç¤º
-	private static JLabel label = new JLabel(   "       æ­¤å¤„æ˜¾ç¤ºæ—¶é—´"); //æ˜¾ç¤ºæ—¶é—´çš„æ ‡ç­¾
+	private static JPanel p1 = new JPanel(new GridLayout(1, 10)); // ¶¨ÒåÒ»¸öÖĞ¼äÈİÆ÷£¬´æ·Å¶¥²¿9¸ö°´Å¥+1¸ö±êÇ©
+	private static JButton[] btn = new JButton[13];// Îª13¸ö°´Å¥Ìí¼ÓÏûÏ¢ÌáÊ¾
+	private static JLabel label = new JLabel("       ´Ë´¦ÏÔÊ¾Ê±¼ä"); // ÏÔÊ¾Ê±¼äµÄ±êÇ©
 	private static JPanel p2 = new JPanel();
 	private static Box box = Box.createVerticalBox();
 	private static JPanel p3 = new JPanel(new BorderLayout());
-	private static JPanel p4 = new JPanel(new BorderLayout());//å­˜ç¬¬1ä¸ªæ–‡æœ¬æ¡†
-	private static JTextArea textArea01 = new JTextArea(5,40);//å®šä¹‰ç¬¬2ä¸ªï¼Œç¬¬3ä¸ªæ–‡æœ¬æ¡†
-	private static JTextArea textArea02 = new JTextArea(3,6);
-	private static JTextArea textArea03 = new JTextArea(5,55);
+	private static JPanel p4 = new JPanel(new BorderLayout());// ´æµÚ1¸öÎÄ±¾¿ò
+	private static JTextArea textArea01 = new JTextArea(5, 40);// ¶¨ÒåµÚ2¸ö£¬µÚ3¸öÎÄ±¾¿ò
+	private static JTextArea textArea02 = new JTextArea(3, 6);
+	private static JTextArea textArea03 = new JTextArea(5, 55);
 	private static Box box01 = Box.createVerticalBox();
 	private static Box box02 = Box.createHorizontalBox();
-	private static JButton bt01 = new JButton("å‘é€è‡³å…¨ä½“æˆå‘˜");//å®šä¹‰ä¸¤ä¸ªæ”¾æŒ‰é’®
-	private static JButton bt02 = new JButton("å‘é€");
+	private static JButton bt01 = new JButton("·¢ËÍÖÁÈ«Ìå³ÉÔ±");// ¶¨ÒåÁ½¸ö·Å°´Å¥
+	private static JButton bt02 = new JButton("·¢ËÍ");
 	private static JPanel p5 = new JPanel();
 	private static JPanel p6 = new JPanel(new GridLayout());
-	private static String[] message = new String[]{
-			"è§†é¢‘å½•åƒ","","",
-			"é”ä½å®¢æˆ·æœº","","",
-			"","","",
-			"","","","è®¾ç½®"
-	};//è®¾ç½®æŒ‰é’®æç¤ºä¿¡æ¯
+	private static String[] message = new String[] { "ÊÓÆµÂ¼Ïñ", "Ñ§ÉúĞÅÏ¢", "ÆÁÄ»¼à¿Ø", "Ëø×¡¿Í»§»ú", "µãÃûÇ©µ½", "Ô¶³Ì¿ØÖÆ", "·Å´óÑ§ÉúÆÁÄ»", "ÎÄ¼ş·Ö·¢", "ÏûÏ¢·¢ËÍ", "×Ü¿ª¹Ø", "",
+			"", "ÉèÖÃ" };// ÉèÖÃ°´Å¥ÌáÊ¾ĞÅÏ¢
+	/*
+	 * ´æ·Å52¸ö°´Å¥ÓëÆä±êÊ¶µÄMapÊı×é Ïß³ÌÍ¬²½µÄ
+	 */
+	public static Map<JButton, Integer> btMap = Collections.synchronizedMap(new HashMap<JButton, Integer>());
+	/*
+	 * µã»÷°´Å¥µÄ±êÊ¶
+	 */
+	public static int clickedNum = -1;
+	/*
+	 * ·Å´óÈ¨ÏŞ
+	 */
+	public static boolean isLarge = false;
+	/*
+	 * ¼à¿Ø¹¦ÄÜÈ¨ÏŞ
+	 */
+	public static boolean isMonitor = false;
+	/*
+	 * getter\setter
+	 */
+	public static JButton[] bt = new JButton[52];
 
-	public static JButton[] bt = new JButton[16];
-	//åˆå§‹åŒ–çª—å£å‡½æ•°
-	public Server_Frame() {
-		//è®¾ç½®çª—ä½“æ ‡é¢˜
-		this.setTitle("è¿œç¨‹æ¡Œé¢ç›‘æ§ç³»ç»Ÿ");
-		//è®¾ç½®çª—ä½“å¤§å°
-		this.setSize(1331,736);
+	private SystemTray tray;
+
+	private TrayIcon trayIcon;
+
+	/**
+	 * @return the textArea03
+	 */
+	public static JTextArea getTextArea03() {
+		return textArea03;
+	}
+
+	/**
+	 * @param textArea03
+	 *            the textArea03 to set
+	 */
+	public static void setTextArea03(JTextArea textArea03) {
+		Server_Frame.textArea03 = textArea03;
+	}
+
+	// ³õÊ¼»¯´°¿Úº¯Êı
+	public Server_Frame() throws Exception {
+		// ÉèÖÃ´°Ìå±êÌâ
+		this.setTitle("Ô¶³Ì×ÀÃæ¼à¿ØÏµÍ³");
+		// ÉèÖÃ´°Ìå´óĞ¡
+		this.setSize(1331, 736);
 		/*
-		 * è®¾ç½®çª—å£å¤„äºå±å¹•æ­£ä¸­é—´
+		 * ÉèÖÃ´°¿Ú´¦ÓÚÆÁÄ»ÕıÖĞ¼ä
 		 */
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-		//è·å–å±å¹•è®¾å¤‡çš„å®½åº¦
-		int width = (int) d.getWidth();//1366
-		//è·å–å±å¹•è®¾å¤‡çš„é«˜åº¦
-		int height = (int) d.getHeight();//768
-		//è®¾ç½®çª—ä½“å¤„äºæ­£ä¸­é—´
-		this.setLocation((width-1331)/2, (height-736)/2);
-		//åˆ†åˆ«åˆ›å»º9ä¸ªä¸Šæ ‡é¢˜æŒ‰é’®
-		for (int i = 0; i <9; i++) {
-			btn[i] = new JButton(new ImageIcon(this.getClass().getResource("/images/"+i+".png")));
+		// »ñÈ¡ÆÁÄ»Éè±¸µÄ¿í¶È
+		int width = (int) d.getWidth();// 1366
+		// »ñÈ¡ÆÁÄ»Éè±¸µÄ¸ß¶È
+		int height = (int) d.getHeight();// 768
+		// ÉèÖÃ´°Ìå´¦ÓÚÕıÖĞ¼ä
+		this.setLocation((width - 1331) / 2, (height - 736) / 2);
+
+		/*
+		 * ÉèÖÃ³ÌĞòÔËĞĞµÄÍ¼±ê
+		 */
+
+		Toolkit tk = Toolkit.getDefaultToolkit();
+
+		Image img = tk.getImage(this.getClass().getResource("/images/0.png"));
+
+		this.setIconImage(img);
+
+		// ÉèÖÃ´°¿Ú¹Ø±ÕÊÂ¼ş¼àÌı
+
+		addWindowListener(new WindowAdapter() {
+
+//			public void windowClosing(WindowEvent e) {
+//
+//				// ½«ÍĞÅÌÍ¼±êÌí¼Óµ½ÏµÍ³µÄÍĞÅÌÊµÀıÖĞ
+//
+//				try {
+//
+//					tray.add(trayIcon);
+//
+//					System.out.println("¹Ø±Õ");
+//					//µ±Ç°´°¿Ú¹Ø±Õ
+//					Server_Frame.this.setVisible(false);
+//
+//				} catch (AWTException e1) {
+//
+//					e1.printStackTrace();
+//
+//				}
+//
+//			}
+//
+		});
+
+		/*
+		 * ÉèÖÃÍĞÅÌ
+		 */
+
+		if (SystemTray.isSupported()) {
+
+			System.out.println("µ÷ ÓÃtray");
+
+			tray();
+
+		}
+
+		// ·Ö±ğ´´½¨9¸öÉÏ±êÌâ°´Å¥
+		for (int i = 0; i < 9; i++) {
+			btn[i] = new JButton(new Font(message[i],Font.ITALIC,10).getName(), new ImageIcon(this.getClass().getResource("/images/" + i + ".png")));
+			btn[i].setVerticalTextPosition(JButton.BOTTOM);
+			btn[i].setHorizontalTextPosition(JButton.CENTER);
+			btn[i].setIconTextGap(10);
 			p1.add(btn[i]);
 			btn[i].setToolTipText(message[i]);
 		}
 		p1.add(label);
-		p2.setBorder(new TitledBorder(new EtchedBorder(),"ç”¨æˆ·åˆ—è¡¨"));
+		p2.setBorder(new TitledBorder(new EtchedBorder(), "ÓÃ»§ÁĞ±í"));
 		/*
-		 * åˆ›å»ºå·¦è¾¹çš„4ä¸ªæŒ‰é’®
+		 * ´´½¨×ó±ßµÄ4¸ö°´Å¥
 		 */
 		for (int i = 9; i < btn.length; i++) {
-			btn[i] = new JButton(new ImageIcon(this.getClass().getResource("/images/"+i+".png")));
+			btn[i] = new JButton(new ImageIcon(this.getClass().getResource("/images/" + i + ".png")));
 			box.add(Box.createHorizontalStrut(1));
 			box.add(btn[i]);
 			btn[i].setToolTipText(message[i]);
 		}
-		p3.add(p2,BorderLayout.CENTER);
-		p3.add(box,BorderLayout.EAST);
-		
-		p4.setBorder(new TitledBorder(new EtchedBorder(),"ä¿¡æ¯ç®¡ç†"));
-		
+
+		/*
+		 * Îªp2Ìí¼Ó¹ö¶¯Ìõ Îª52¸ö°´Å¥Ìí¼ÓÌáÊ¾
+		 */
+
+		p2.setLayout(new GridLayout(13, 2));
+
+		for (int i = 0; i < bt.length; i++) {
+			bt[i] = new JButton((i + 1) + "ºÅ»ú", new ImageIcon(this.getClass().getResource("/images/huaji.png")));
+			bt[i].setToolTipText((i + 1) + " ºÅ µç ÄÔ ");
+			bt[i].setVerticalTextPosition(JButton.BOTTOM);
+			bt[i].setHorizontalTextPosition(JButton.CENTER);
+			bt[i].setIconTextGap(90);
+			p2.add(bt[i]);
+		}
+
+		/*
+		 * Îªp2Ìí¼Ó¹ö¶¯Ìõ
+		 */
+		JScrollPane js_p2 = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		js_p2.setViewportView(p2);
+		p2.setPreferredSize(new Dimension(400, 2800));
+		p2.revalidate();
+
+		p3.add(js_p2, BorderLayout.CENTER);
+		p3.add(box, BorderLayout.EAST);
+
+		p4.setBorder(new TitledBorder(new EtchedBorder(), "ĞÅÏ¢¹ÜÀí"));
+
 		textArea01.setLineWrap(true);
 		textArea01.setWrapStyleWord(true);
 		JScrollPane js_01 = new JScrollPane(textArea01);
-		
+
 		textArea02.setLineWrap(true);
 		textArea02.setWrapStyleWord(true);
 		JScrollPane js_02 = new JScrollPane(textArea02);
@@ -93,75 +223,249 @@ public class Server_Frame extends JFrame{
 		box02.add(bt01);
 		box02.add(Box.createHorizontalStrut(10));
 		box02.add(bt02);
-		
+
 		box01.add(js_02);
 		box01.add(box02);
 
 		/*
-		 * è®¾ç½®å¸ƒå±€
+		 * ÉèÖÃ²¼¾Ö
 		 */
-		p4.add(js_01,BorderLayout.WEST);
-		p4.add(box01,BorderLayout.EAST);
+		p4.add(js_01, BorderLayout.WEST);
+		p4.add(box01, BorderLayout.EAST);
 
-		p5.setBorder(new TitledBorder(new EtchedBorder(),"ç”¨æˆ·è®°å½•"));
+		p5.setBorder(new TitledBorder(new EtchedBorder(), "ÓÃ»§¼ÇÂ¼"));
 
 		/*
-		 * æ–‡æœ¬æ¡†
+		 * ÎÄ±¾¿ò
 		 */
-		//è®¾ç½®è‡ªåŠ¨æ¢è¡Œã€è‡ªåŠ¨æ¢å­—åŠŸèƒ½
+		// ÉèÖÃ×Ô¶¯»»ĞĞ¡¢×Ô¶¯»»×Ö¹¦ÄÜ
 		textArea03.setLineWrap(true);
 		textArea03.setWrapStyleWord(true);
+		textArea03.setEditable(false);
 		JScrollPane js_03 = new JScrollPane(textArea03);
-		
+
 		p5.add(js_03);
-		
-		//å­˜ç¬¬p4,p5
+
+		// ´æµÚp4,p5
 		p6.add(p4);
 		p6.add(p5);
-		
+
 		/*
-		 * å°†ä¸‰ä¸ªå®¹å™¨æ·»åŠ åˆ°JFrameä¸­
+		 * ¸ø52¸ö°´Å¥×ö¸öÓ³Éä Ã¿¸ö°´Å¥ĞòºÅ¶ÔÓ¦´Ó1~52
 		 */
-		this.add(p1,BorderLayout.NORTH);
-		this.add(p3,BorderLayout.CENTER);
-		this.add(p6,BorderLayout.SOUTH);
-		
-		
-		p2.setLayout(new GridLayout(4, 4));
-		
-		
 		for (int i = 0; i < bt.length; i++) {
-			bt[i] = new JButton(new ImageIcon(this.getClass().getResource("/images/"+i+".png")));
-			p2.add(bt[i]);
+			btMap.put(bt[i], i + 1);
+			bt[i].setEnabled(false);
 		}
-		
-		//è®¾ç½®çª—ä½“æ˜¾ç¤ºå‡ºæ¥
+		/*
+		 * ½«Èı¸öÈİÆ÷Ìí¼Óµ½JFrameÖĞ
+		 */
+		this.add(p1, BorderLayout.NORTH);
+		this.add(p3, BorderLayout.CENTER);
+		this.add(p6, BorderLayout.SOUTH);
+		componentListener();
+
+		// ÉèÖÃ´°ÌåÏÔÊ¾³öÀ´
 		this.setVisible(true);
-		//è®¾ç½®çª—å£ä¸èƒ½ä¿®æ”¹å¤§å°
+		// ÉèÖÃ´°¿Ú²»ÄÜĞŞ¸Ä´óĞ¡
 		this.setResizable(false);
-		//è®¾ç½®å¯ä»¥ç‚¹å‡»å…³é—­
+		// ÉèÖÃ¿ÉÒÔµã»÷¹Ø±Õ
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-	
-	public void componentListener(){
+
+	private void tray() {
+
+		// »ñµÃ±¾²Ù×÷ÏµÍ³ÍĞÅÌµÄÊµÀı
+
+		tray = SystemTray.getSystemTray();
+
+		// ÏÔÊ¾ÔÚÍĞÅÌÖĞµÄÍ¼±ê
+
+		ImageIcon icon = new ImageIcon(this.getClass().getResource("/images/1.png"));
+
+		// ¹¹ÔìÒ»¸öÓÒ¼üµ¯³öÊ½²Ëµ¥
+
+		PopupMenu pop = new PopupMenu();
+		MenuItem file = new MenuItem("·¢ËÍÎÄ¼ş");
+		MenuItem screen = new MenuItem("·Å´óÑ§ÉúÆÁÄ»");
+		MenuItem monitor = new MenuItem("¿ªÆô¼à¿Ø");
+		MenuItem exit = new MenuItem("¹Ø±Õ·şÎñ");
+		
+		pop.add(monitor);
+		pop.addSeparator();
+		pop.add(file);
+		pop.addSeparator();
+		pop.add(screen);
+		pop.addSeparator();
+		pop.add(exit);
+		pop.addSeparator();
+		
+		trayIcon = new TrayIcon(icon.getImage(), "ÊµÑéÊÒµç×Ó½ÌÑ§¼à¿ØÏµÍ³£¨·şÎñ¶Ë£©", pop);
+
+		// Õâ¾äºÜÖØÒª£¬Ã»ÓĞ»áµ¼ÖÂÍ¼Æ¬ÏÔÊ¾²»³öÀ´
+
+		trayIcon.setImageAutoSize(true);
+
 		/*
-		 * å‘é€å…¨ä½“æˆå‘˜æŒ‰é’®
+		 * µã»÷ÓÒÏÂ½ÇÍ¼±êµÄÊÂ¼ş
+		 */
+		trayIcon.addMouseListener(new MouseAdapter() {
+
+			public void mouseClicked(MouseEvent e) {
+
+				if (e.getClickCount() == 2) {
+
+						trayIcon.setImageAutoSize(true);
+						Server_Frame.this.setVisible(true);
+						
+				}
+
+			}
+
+		});
+		
+		try {
+			tray.add(trayIcon);
+		} catch (AWTException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		exit.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+
+				tray.remove(trayIcon);
+				System.exit(0);
+
+			}
+
+		});
+
+	}
+
+	public void componentListener() {
+		/*
+		 * ×îĞ¡»¯Ê±Òş²Ø¸Ã´°¿Ú
+		 */
+
+		this.addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				super.windowIconified(e);
+				Server_Frame.this.setVisible(false);
+			}
+		});
+
+		this.addWindowFocusListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+		/*
+		 * µã»÷¸Ã°´Å¥±íÊ¾¿ªÆôÁË¼à¿Ø¹¦ÄÜ
+		 */
+		btn[2].addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				for (int i = 0; i < bt.length; i++) {
+					bt[i].setEnabled(true);
+				}
+				isMonitor = true;
+				Server_Frame.getTextArea03().append(GenerateDate.getDate() + "ÆÁÄ»¼à¿ØÒÑ¿ªÆô£¡\n");
+				JOptionPane.showMessageDialog(null, "ÆÁÄ»¼à¿ØÒÑ¿ªÆô£¡");
+			}
+		});
+		/*
+		 * Éæ¼°µÄ±äÁ¿Îª£ºisLarge
+		 */
+		btn[6].addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				isLarge = true;
+				JOptionPane.showMessageDialog(null, "·Å´ó¹¦ÄÜÒÑ¿ªÆô£¡");
+				Server_Frame.getTextArea03().append(GenerateDate.getDate() + "·Å´ó¹¦ÄÜÒÑ¿ªÆô£¡\n");
+			}
+		});
+
+		btn[7].addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				/*
+				 * ÏÈ¿ªÆô¼à¿Ø¹¦ÄÜ²ÅÄÜ·¢ÎÄ¼ş
+				 */
+				if (!isMonitor) {
+					JOptionPane.showMessageDialog(null, "ÇëÏÈ¿ªÆô¼à¿Ø¹¦ÄÜ£¡Ã´Ã´ßÕ£¡");
+				} else if (Server.ipMap.size() <= 0) {
+					JOptionPane.showMessageDialog(null, "·Ö·¢ÎÄ¼ş±ØĞëÖÁÉÙÓĞÒ»Ì¨Ñ§ÉúµçÄÔÁ¬½ÓÉÏ");
+				} else {
+					Server.fileFlag = true;
+					Server_Frame.getTextArea03().append("true");
+				}
+
+			}
+		});
+		/*
+		 * 52¸ö°´Å¥,Èç¹û·Å´ó¹¦ÄÜÔÊĞí
+		 */
+
+		for (int i = 0; i < bt.length; i++) {
+			bt[i].addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (isMonitor == true) {
+						clickedNum = btMap.get(e.getSource());
+						if (isLarge == true) {
+							/*
+							 * »ñÈ¡°´Å¥µã»÷Ô´Í·¶ÔÓ¦µÄĞòºÅ1~52
+							 */
+							/*
+							 * Èç¹û¸ÃµçÄÔÎ´Á¬½Ó
+							 */
+							if (clickedNum > Server.ipMap.size()) {
+								Server_Frame.getTextArea03()
+										.append(GenerateDate.getDate() + clickedNum + " ºÅ µç ÄÔ Î´ Á´ ½Ó £¡\n");
+							} else {
+								new NewWatchFrame();
+							}
+						} else {
+
+							if (clickedNum > Server.ipMap.size()) {
+								Server_Frame.getTextArea03()
+										.append(GenerateDate.getDate() + clickedNum + " ºÅ µç ÄÔ Î´ Á´ ½Ó £¡\n");
+							} else {
+								JOptionPane.showMessageDialog(null, "ÇëÏÈ¿ªÆô·Å´ó¹¦ÄÜ£¡Ã´Ã´ßÕ£¡");
+								Server_Frame.getTextArea03().append(GenerateDate.getDate() + "ÇëÏÈ¿ªÆô·Å´ó¹¦ÄÜ£¡\n");
+							}
+						}
+					} else {
+						JOptionPane.showMessageDialog(null, "ÇëÏÈ¿ªÆô¼à¿Ø¹¦ÄÜ£¡");
+					}
+				}
+			});
+		}
+		/*
+		 * ·¢ËÍÈ«Ìå³ÉÔ±°´Å¥
 		 */
 		bt01.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				label.setText("ä½ å¥½");
+				label.setText("ÄãºÃ");
 			}
 		});
 		/*
-		 * å‘é€æŒ‰é’®
+		 * ·¢ËÍ°´Å¥
 		 */
 		bt02.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				
+				Server_Frame.getTextArea03().append("·¢ËÍ\n");
 			}
 		});
+
 	}
 
 }
